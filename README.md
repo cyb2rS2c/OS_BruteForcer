@@ -49,10 +49,9 @@ sudo python3 OS_Bruteforcer.py
 - You can replace pass.txt or modify the script to use a custom wordlist.
 
 
-
-## Educational Purposes
-
-This project is intended for educational purposes only. The code demonstrates how to interact with system commands and network interfaces via Python. Do not use this toolkit for unauthorized or illegal network activities. Always obtain proper authorization before testing network security.
+## ⚠️ Disclaimer
+This tool is intended only for educational purposes and authorized penetration testing.
+Do not use it on systems you do not own or have explicit permission to test.
 
 ## 📝 Author
 cyb2rS2c - [GitHub Profile](https://github.com/cyb2rS2c)
@@ -61,6 +60,4 @@ cyb2rS2c - [GitHub Profile](https://github.com/cyb2rS2c)
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## ⚠️ Disclaimer
-This tool is intended only for educational purposes and authorized penetration testing.
-Do not use it on systems you do not own or have explicit permission to test.
+
