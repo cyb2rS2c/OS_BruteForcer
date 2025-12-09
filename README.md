@@ -35,6 +35,8 @@ chmod +x setup.sh;source ./setup.sh
 - The script uses pass.txt in the ```assets/``` folder by default.
 - You can replace pass.txt or modify the script to use a custom wordlist.
 
+## Screenshots
+<img width="604" height="187" alt="image" src="https://github.com/user-attachments/assets/467ba3eb-7800-4638-9613-7480554a11d2" />
 
 ## Disclaimer
 This tool is intended only for educational purposes and authorized penetration testing.
