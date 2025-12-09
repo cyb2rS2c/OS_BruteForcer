@@ -17,6 +17,20 @@ Designed for **educational and authorized penetration testing** only.
 
 ---
 
+## Project Tree
+```
+.
+├── assets
+│   └── pass.txt
+├── LICENSE
+├── README.md
+├── requirements.txt
+├── setup.sh
+└── src
+    ├── animation.py
+    └── OS_Bruteforcer.py
+```
+
 
 ## Usage
 
